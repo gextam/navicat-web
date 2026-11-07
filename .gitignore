@@ -1,0 +1,9 @@
+# application store, encryption key, sessions, uploads
+data/*
+!data/.htaccess
+!data/index.html
+tests/.demo_credentials
+*.log
+.DS_Store
+Thumbs.db
+node_modules/
