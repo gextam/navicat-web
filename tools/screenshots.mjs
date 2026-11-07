@@ -99,6 +99,9 @@ try {
   await waitFor("!!(window.NW && NW.Tree && NW.Tree.el && NW.state && NW.state.connections)", 30000, 'application');
   await sleep(500);
   await closeDialogs();
+  /* the pictures are taken in the light theme at the default font size (saved directly, not debounced) */
+  const setTheme = (theme) => evalJs(`(async () => { NW.state.settings.theme = ${JSON.stringify(theme)}; NW.state.settings.fontSize = 12; NW.applyTheme(); await NW.api('app.settings.save', { settings: { theme: ${JSON.stringify(theme)}, fontSize: 12 } }); return 1; })()`);
+  await setTheme('light');
 
   /* ---- connections: the one we show open, plus a closed one for the tree ---- */
   const connId = await evalJs(`(async () => {
@@ -196,7 +199,10 @@ try {
   /* ---- 7. Server monitor ---- */
   await evalJs(`NW.Tools.serverMonitor(${C}) && 1`);
   await waitFor("!!document.querySelector('.tab-content:not(.hidden) .dz-panel.active tbody tr')", 60000, 'process list');
-  await sleep(300); await evalJs(quiet);
+  await evalJs("(() => { document.querySelector('.tab-content:not(.hidden) .dz-tab[data-id=vars]').click(); return 1; })()");
+  await waitFor("document.querySelectorAll('.tab-content:not(.hidden) .dz-panel.active tbody tr').length > 50", 60000, 'variables');
+  await evalJs("(() => { const f = document.querySelector('.tab-content:not(.hidden) .dz-panel.active .sb-search'); f.value = 'innodb_buffer'; f.dispatchEvent(new Event('input')); return 1; })()");
+  await sleep(2500); await evalJs(quiet);
   await shot('server-monitor.png');
 
   /* ---- 8. Function designer ---- */
@@ -206,10 +212,11 @@ try {
   await shot('function-designer.png');
 
   /* ---- 9. Dark theme ---- */
-  await evalJs(`(() => { NW.settings.set('theme', 'dark'); NW.applyTheme(); NW.Tabs.activate('table:' + ${C} + '/' + ${D} + '/customers'); return 1; })()`);
+  await setTheme('dark');
+  await evalJs(`(() => { NW.Tabs.activate('table:' + ${C} + '/' + ${D} + '/customers'); return 1; })()`);
   await sleep(500); await evalJs(quiet);
   await shot('dark-theme.png');
-  await evalJs("(() => { NW.settings.set('theme', 'light'); NW.applyTheme(); return 1; })()");
+  await setTheme('light');
 
   console.log('done ->', OUT);
 } catch (e) {
