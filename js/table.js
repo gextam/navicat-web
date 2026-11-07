@@ -33,7 +33,7 @@
       const btn = (label, icon, fn, title) => h('button', { class: 'sb-btn', title: title || label, onclick: fn }, NW.svg(icon), label);
       this.btnFilter = btn('Filter', 'filter', () => this.toggleFilter());
       this.btnSort = btn('Sort', 'sort', () => this.toggleSort());
-      this.bar.append(
+      NW.append(this.bar, [
         this.btnFilter, this.btnSort, h('div', { class: 'sb-sep' }),
         btn('Refresh', 'refresh', () => this.load(), 'Refresh (F5)'),
         h('div', { class: 'sb-sep' }),
@@ -44,7 +44,7 @@
         btn('New Query', 'query', () => NW.Query.open({ conn: this.conn, db: this.db, sql: 'SELECT * FROM ' + NW.qi(this.table) + ' LIMIT 100;' })),
         h('div', { class: 'sb-spacer' }),
         this.isView ? h('span', { class: 'pill', text: 'Read-only (view)' }) : null,
-      );
+      ]);
       el.appendChild(this.bar);
       this.filterBar = h('div', { class: 'fbar', style: 'display:none' }); el.appendChild(this.filterBar);
       this.sortBar = h('div', { class: 'fbar', style: 'display:none' }); el.appendChild(this.sortBar);
@@ -165,7 +165,7 @@
       const names = this.cols.map(c => c.name);
       this.filters.forEach((f, i) => {
         const row = h('div', { class: 'frow' });
-        row.append(
+        NW.append(row, [
           i === 0 ? h('span', { class: 'ftitle', text: 'Filter' }) : h('span', { class: 'ftitle', text: 'AND' }),
           h('input', { type: 'checkbox', checked: f.on, onchange: e => f.on = e.target.checked }),
           NW.select(names, f.col, { onchange: e => f.col = e.target.value }),
@@ -173,7 +173,7 @@
           NOVAL.includes(f.op) ? null : h('input', { class: 'inp', value: f.val, placeholder: /in$/.test(f.op) ? 'a, b, c' : 'value', oninput: e => f.val = e.target.value, onkeydown: e => { if (e.key === 'Enter') this.applyFilter(); } }),
           /between/.test(f.op) ? h('input', { class: 'inp', value: f.val2, placeholder: 'and', oninput: e => f.val2 = e.target.value, onkeydown: e => { if (e.key === 'Enter') this.applyFilter(); } }) : null,
           h('button', { class: 'ib', title: 'Remove', onclick: () => { this.filters.splice(i, 1); this._renderFilterBar(); } }, NW.svg('close')),
-        );
+        ]);
         bar.appendChild(row);
       });
       const whereRow = h('div', { class: 'frow' }, h('span', { class: 'ftitle', text: 'Where' }), h('input', { class: 'inp', style: 'width:520px', value: this.where, placeholder: 'custom condition, e.g. price > 100 AND status <> \'cancelled\'', oninput: e => this.where = e.target.value, onkeydown: e => { if (e.key === 'Enter') this.applyFilter(); } }));
@@ -439,7 +439,7 @@
       if (st.panels.json) {
         const pre = h('pre', { class: 'hexview', style: 'max-height:46vh' });
         try { pre.textContent = JSON.stringify(JSON.parse(text), null, 2); } catch (e) { pre.textContent = 'Not valid JSON: ' + e.message; pre.classList.add('err-text'); }
-        st.panels.json.append(pre, o.readOnly ? null : h('button', { class: 'btn', style: 'margin-top:8px', onclick: () => { try { ta.value = JSON.stringify(JSON.parse(ta.value || text), null, 2); changed = true; isNull = false; st.show('text'); } catch (e) { NW.Toast.err('Not valid JSON: ' + e.message); } } }, 'Format and edit'));
+        NW.append(st.panels.json, [pre, o.readOnly ? null : h('button', { class: 'btn', style: 'margin-top:8px', onclick: () => { try { ta.value = JSON.stringify(JSON.parse(ta.value || text), null, 2); changed = true; isNull = false; st.show('text'); } catch (e) { NW.Toast.err('Not valid JSON: ' + e.message); } } }, 'Format and edit')]);
       }
       st.el.style.height = '440px';
       const buttons = o.readOnly ? [{ label: 'Close', value: null }] : [
